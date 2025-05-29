@@ -1,0 +1,23 @@
+{
+  "name": "create-react-ts-tailwind",
+  "version": "1.1.3",
+  "description": "CLI para crear proyectos React + TypeScript + Tailwind CSS",
+  "bin": {
+    "create-react-ts-tailwind": "./bin/create-app.js"
+  },
+  "dependencies": {
+    "degit": "^2.8.4",
+    "inquirer": "^9.2.15"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "tailwind",
+    "template"
+  ],
+  "author": "Santiago Mustafa",
+  "license": "MIT"
+}
