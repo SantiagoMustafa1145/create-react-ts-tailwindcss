@@ -56,7 +56,7 @@ async function detectPackageManagers() {
 }
 
 // Función para instalar dependencias
-function installDependencies(manager, path) {
+function installDependencies(manager, path, stateManager) {
   console.log(`📦 Instalando dependencias con ${manager}...`);
 
   let command = manager;
@@ -77,7 +77,7 @@ function installDependencies(manager, path) {
       break;
   }
 
-  const result = spawnSync(command, args, {
+  const result = spawnSync(command, args + ` ${stateManager}`, {
     cwd: path,
     stdio: "inherit",
   });
@@ -118,6 +118,26 @@ async function main() {
       default: availableManagers.includes("npm") ? "npm" : availableManagers[0],
     });
 
+    let { stateManager } = await prompt({
+      type: "list",
+      default: true,
+      name: "stateManager",
+      message: "¿Prefieres Zustand o Redux?",
+      choices: ["zustand", "redux", "otra"],
+      default: "zustand",
+    });
+
+    if (stateManager === "otra") {
+      const { otherStateManager } = await prompt({
+        type: "input",
+        default: false,
+        name: "otherStateManager",
+        message: "¿Con qué librería quieres manejar tu estado?",
+      });
+
+      stateManager = otherStateManager;
+    }
+
     // Instalar dependencias
     const { accessToInstall } = await prompt({
       type: "confirm",
@@ -127,30 +147,30 @@ async function main() {
     });
 
     // Avisamos que el proyecto se creó correctamente.
-    console.log("\n🎉 ¡Proyecto creado con éxito!");
-    console.log("Para comenzar:");
-    console.log(`  cd ${projectName}`);
-
     if (accessToInstall) {
-      const installSuccess = installDependencies(packageManager, targetPath);
+      const installSuccess = installDependencies(
+        packageManager,
+        targetPath,
+        stateManager
+      );
 
       if (installSuccess) {
         // Comando para iniciar basado en el gestor
-        const runCommand =
-          packageManager === "npm" || packageManager === "pnpm"
-            ? `${packageManager} run dev`
-            : `${packageManager} dev`;
-
-        console.log(`  ${runCommand}`);
+        console.log("\n🎉 ¡Proyecto creado con éxito!");
+        console.log(`  cd ${projectName}`);
       } else {
         console.error("❌ Error instalando dependencias");
         console.log("Puedes intentar instalarlas manualmente:");
         console.log(`cd ${projectName} && ${packageManager} install`);
       }
     } else {
-      console.log(`   ${packageManager} i`);
+      // Avisamos que el proyecto se creó y dictamos los comandos para comenzar
+      console.log("\n🎉 ¡Proyecto creado con éxito!");
+      console.log("Para comenzar:");
+      console.log(`cd ${projectName} && ${packageManager} install`);
     }
   } catch (err) {
+    // Cancelamos la descarga del proyecto
     console.error("❌ Error al crear el proyecto:", err.message);
     process.exit(1);
   }
