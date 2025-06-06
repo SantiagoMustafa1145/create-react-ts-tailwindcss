@@ -77,7 +77,9 @@ function installDependencies(manager, path, stateManager) {
       break;
   }
 
-  const result = spawnSync(command, args + ` ${stateManager}`, {
+  args.push(stateManager);
+
+  const result = spawnSync(command, args, {
     cwd: path,
     stdio: "inherit",
   });
@@ -118,6 +120,7 @@ async function main() {
       default: availableManagers.includes("npm") ? "npm" : availableManagers[0],
     });
 
+    // Preguntar por el gestor de estado
     let { stateManager } = await prompt({
       type: "list",
       default: true,
@@ -127,12 +130,14 @@ async function main() {
       default: "zustand",
     });
 
+    // Dar opción a la personalización del gestor de estado
     if (stateManager === "otra") {
       const { otherStateManager } = await prompt({
         type: "input",
-        default: false,
+        default: true,
         name: "otherStateManager",
         message: "¿Con qué librería quieres manejar tu estado?",
+        default: "",
       });
 
       stateManager = otherStateManager;
@@ -146,7 +151,6 @@ async function main() {
       message: "¿Quiere instalar las dependencias?",
     });
 
-    // Avisamos que el proyecto se creó correctamente.
     if (accessToInstall) {
       const installSuccess = installDependencies(
         packageManager,
@@ -155,9 +159,8 @@ async function main() {
       );
 
       if (installSuccess) {
-        // Comando para iniciar basado en el gestor
         console.log("\n🎉 ¡Proyecto creado con éxito!");
-        console.log(`  cd ${projectName}`);
+        console.log(`cd ${projectName}`);
       } else {
         console.error("❌ Error instalando dependencias");
         console.log("Puedes intentar instalarlas manualmente:");
